@@ -12,7 +12,7 @@ int BowlingGame::score() const {
     int totalScore = 0;
     int rollIndex = 0;
 
-    for (int frame = 0; frame < 9; ++frame) {
+    for (int frame = 0; frame < 10; ++frame) {
         if (rollIndex >= rolls.size()) break;
 
         if (isStrike(rollIndex)) {
@@ -30,7 +30,6 @@ int BowlingGame::score() const {
         }
     }
 
-    totalScore += sumRemainingRolls(rollIndex);
     return totalScore;
 }
 
@@ -54,14 +53,7 @@ int BowlingGame::sumOfBallsInFrame(int index) const {
     return rolls[index] + rolls[index + 1];
 }
 
-int BowlingGame::sumRemainingRolls(int index) const {
-    int sum = 0;
-    for (int i = index; i < rolls.size(); ++i) {
-        sum += rolls[i];
-    }
-    return sum;
-}
-
 bool BowlingGame::isValidRoll(int pins) const {
     return pins >= 0 && pins <= 10;
 }
+
