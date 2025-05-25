@@ -1,64 +1,87 @@
 #include <iostream>
+#include <vector>
 #include "BowlingGame.h"
+
+// Helper function for validated user input
+int getValidInput() {
+    int pins;
+    while (true) {
+        std::cin >> pins;
+        if (std::cin.fail() || pins < 0 || pins > 10) {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "Invalid input. Enter a number between 0 and 10: ";
+        } else {
+            break;
+        }
+    }
+    return pins;
+}
 
 int main() {
     BowlingGame game;
-    int pins;
-    int rollInFrame = 0;
-    int frame = 1;
-    bool isTenthFrame = false;
-    int rollsInTenthFrame = 0;
+    int frame = 1, rollInFrame = 0, rollsInTenthFrame = 0;
     std::vector<int> tenthFrameRolls;
 
     std::cout << "Enter pins knocked down per roll:\n";
 
     while (frame <= 10) {
-        std::cout << "Frame " << frame << ", Roll " << (isTenthFrame ? rollsInTenthFrame + 1 : rollInFrame + 1) << ": ";
+        std::cout << "Frame " << frame << ", Roll " 
+                  << ((frame == 10) ? rollsInTenthFrame + 1 : rollInFrame + 1) << ": ";
 
-        if (!(std::cin >> pins)) {
-            std::cout << "Non-numeric input detected. Ending input...\n";
-            break;
-        }
+        int pins = getValidInput();
 
-        try {
-            game.roll(pins);
-
-            if (frame < 10) {
-                if (pins == 10 && rollInFrame == 0) {
-                    // Strike in non-10th frame
-                    frame++;
-                } else if (rollInFrame == 1) {
-                    frame++;
-                    rollInFrame = 0;
-                } else {
-                    rollInFrame++;
-                }
-            } else {
-                // Tenth frame special handling
-                tenthFrameRolls.push_back(pins);
-                rollsInTenthFrame++;
-
-                if (rollsInTenthFrame == 1) {
-                    if (pins == 10) {
-                        // Strike on first roll, allow 2 more
-                        continue;
-                    }
-                } else if (rollsInTenthFrame == 2) {
-                    if (tenthFrameRolls[0] + tenthFrameRolls[1] >= 10) {
-                        // Spare or second strike, allow 1 more
-                        continue;
-                    } else {
-                        break; // No bonus roll
-                    }
-                } else if (rollsInTenthFrame == 3) {
-                    break;
-                }
+        // Handle 10th frame logic separately
+        if (frame == 10) {
+            if (rollsInTenthFrame == 1 && tenthFrameRolls[0] != 10 && tenthFrameRolls[0] + pins > 10) {
+                std::cout << "Invalid frame: total pins in a frame cannot exceed 10. Please try again.\n";
+                continue;
             }
 
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Error: " << e.what() << " Please try again.\n";
-            std::cin.clear();
-            std::cin.ignore(10000, '\n');
+            tenthFrameRolls.push_back(pins);
+            try {
+                game.roll(pins);
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "Error: " << e.what() << " Please try again.\n";
+                tenthFrameRolls.pop_back();
+                continue;
+            }
+
+            rollsInTenthFrame++;
+            if (rollsInTenthFrame == 1 && pins == 10) continue;
+            if (rollsInTenthFrame == 2 && (tenthFrameRolls[0] == 10 || tenthFrameRolls[0] + tenthFrameRolls[1] == 10)) continue;
+            if (rollsInTenthFrame == 3) break;
+            if (rollsInTenthFrame == 2 && tenthFrameRolls[0] + tenthFrameRolls[1] < 10) break;
+
+        } else {
+            // Normal frame validation
+      if (rollInFrame == 1) { // Validate second roll
+    int previousRoll = game.getLastRoll();
+    if (previousRoll + pins > 10) {
+        std::cout << "Invalid frame: total pins cannot exceed 10. Try again.\n";
+        continue;
+    }
+}
+
+
+
+
+
+            try {
+                game.roll(pins);
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "Error: " << e.what() << " Please try again.\n";
+                continue;
+            }
+
+            if (pins == 10 && rollInFrame == 0) {
+                frame++;
+            } else if (rollInFrame == 1) {
+                frame++;
+                rollInFrame = 0;
+            } else {
+                rollInFrame++;
+            }
         }
     }
 

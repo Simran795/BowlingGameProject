@@ -2,8 +2,10 @@
 
 class BowlingGame {
 public:
+    BowlingGame(); 
     void roll(int pins);
     int score() const;
+    int getLastRoll() const;
 
 private:
     std::vector<int> rolls;
@@ -15,4 +17,5 @@ private:
     int sumOfBallsInFrame(int index) const;
     int sumRemainingRolls(int index) const;
     bool isValidRoll(int pins) const;
+
 };
